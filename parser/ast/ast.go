@@ -1,4 +1,5 @@
 package ast
 
-type AST struct {
+type AST interface {
+	visit() int
 }

@@ -10,9 +10,13 @@ import (
 )
 
 func NewSimpleParser(text string) *SimpleParser {
-	return &SimpleParser{
-		lexer: lexer.NewSimpleLexer([]byte(text)),
+	parser := &SimpleParser{
+		lexer: lexer.NewSimpleLexer(([]byte(text))),
 	}
+	t, _ := parser.lexer.Next()
+	parser.curr = t
+
+	return parser
 }
 
 type SimpleParser struct {
@@ -25,38 +29,8 @@ func (s *SimpleParser) Parse() (*ast.AST, error) {
 }
 
 func (s *SimpleParser) parse() (*ast.AST, error) {
-	curr, err := s.lexer.Next()
-	if err != nil {
-		return nil, err
-	}
-	s.curr = curr
-
-	left := s.curr
-	s.eat(token.Integer)
-
-	op := s.curr
-	if op.Type() == token.Plus {
-		s.eat(token.Plus)
-	} else {
-		s.eat(token.Minus)
-	}
-
-	right := s.curr
-	s.eat(token.Integer)
-
-	leftVal, err := left.ToInt()
-	if err != nil {
-		return nil, err
-	}
-	rightVal, err := right.ToInt()
-	if err != nil {
-		return nil, err
-	}
-	if op.Type() == token.Plus {
-		fmt.Println(leftVal + rightVal)
-		return nil, nil
-	}
-	fmt.Println(leftVal - rightVal)
+	result := s.expr()
+	fmt.Println(result)
 	return nil, nil
 }
 
@@ -69,4 +43,41 @@ func (s *SimpleParser) eat(t token.TokenType) error {
 		return nil
 	}
 	return errors.Errorf("cannot matched requested token type($s:%s)", s.curr.Type().String(), t.String())
+}
+
+func (s *SimpleParser) factor() int {
+	t := s.curr
+	s.eat(token.Integer)
+	value, _ := t.ToInt()
+	return value
+}
+
+func (s *SimpleParser) term() int {
+	result := s.factor()
+	for s.curr.Type() == token.Mul || s.curr.Type() == token.Div {
+		t := s.curr
+		if t.Type() == token.Mul {
+			s.eat(token.Mul)
+			result = result * s.factor()
+		} else if t.Type() == token.Div {
+			s.eat(token.Div)
+			result = result / s.factor()
+		}
+	}
+	return result
+}
+
+func (s *SimpleParser) expr() int {
+	result := s.term()
+	for s.curr.Type() == token.Plus || s.curr.Type() == token.Minus {
+		t := s.curr
+		if t.Type() == token.Plus {
+			s.eat(token.Plus)
+			result = result + s.term()
+		} else if t.Type() == token.Minus {
+			s.eat(token.Minus)
+			result = result - s.term()
+		}
+	}
+	return result
 }

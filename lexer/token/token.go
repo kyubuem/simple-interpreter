@@ -11,6 +11,8 @@ const (
 	Integer TokenType = iota
 	Plus
 	Minus
+	Mul
+	Div
 	Eof
 )
 
