@@ -56,6 +56,16 @@ func (s *SimpleLexer) next() (token.Token, error) {
 			return token.New(token.Div, "/"), nil
 		}
 
+		if s.curr == '(' {
+			s.advance()
+			return token.New(token.Lparen, "("), nil
+		}
+
+		if s.curr == ')' {
+			s.advance()
+			return token.New(token.Rparen, ")"), nil
+		}
+
 		return token.Token{}, errors.Errorf("Cannot tokenize for requested character(%c)", s.curr)
 	}
 

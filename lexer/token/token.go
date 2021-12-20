@@ -13,6 +13,8 @@ const (
 	Minus
 	Mul
 	Div
+	Lparen
+	Rparen
 	Eof
 )
 
